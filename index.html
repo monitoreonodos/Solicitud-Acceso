@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Solicitud de Acceso a Nodos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{
+      --campfire-1:#EC6014; --campfire-2:#F88F23; --campfire-3:#FBB931; --campfire-4:#FFE3B3;
+      --bg:#0f172a; --ink:#111; --ink-soft:#333;
+    }
+    body{background:var(--bg);color:#e5e7eb}
+    .card{border-radius:1rem;background:#fff;color:var(--ink);border:1px solid #e9ecef;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+    label.form-label{font-weight:600;color:var(--ink)}
+    .muted{opacity:.85}
+    .invalid-feedback{display:block}
+    .form-control,.form-select{background:#fff;color:var(--ink);border:1px solid #cfd6de}
+    .form-control::placeholder{color:#8b95a1}
+    .form-control:focus,.form-select:focus{border-color:var(--campfire-2);box-shadow:0 0 0 .25rem rgba(248,143,35,.2)}
+    .brandbar{background:linear-gradient(90deg,var(--campfire-1),var(--campfire-2),var(--campfire-3));color:#1a1a1a;border-radius:16px;padding:.85rem 1rem;display:inline-flex;align-items:center;gap:.5rem;box-shadow:0 8px 24px rgba(236,96,20,.35);font-weight:800}
+    .brand-dot{width:10px;height:10px;border-radius:50%;background:#1a1a1a;opacity:.8}
+    .badge-camp{background:var(--campfire-4);color:#5a3b00;border:1px solid rgba(0,0,0,.06)}
+    .section-title{color:#b86b00;margin-top:.5rem}
+    hr{border-color:#eee;margin:0.25rem 0 1rem}
+
+    /* SmartSelect */
+    .ss-wrap{position:relative}
+    .ss-display{cursor:pointer;background:#fff;border:1px solid #cfd6de;border-radius:.375rem;min-height:38px;height:38px;display:flex;align-items:center;justify-content:space-between;padding:.375rem .75rem;gap:.75rem;white-space:nowrap;overflow:hidden}
+    .ss-text{overflow:hidden;text-overflow:ellipsis}
+    .ss-text.ss-placeholder{color:#8b95a1}
+    .ss-caret{font-size:14px;line-height:1}
+    .ss-wrap.open .ss-caret{transform:rotate(180deg)}
+    .ss-panel{position:absolute;left:0;right:0;top:calc(100% + .25rem);z-index:1000;background:#fff;border:1px solid #cfd6de;border-radius:.375rem;box-shadow:0 10px 24px rgba(0,0,0,.12);display:none}
+    .ss-wrap.open .ss-panel{display:block}
+    .ss-search{border:none;border-bottom:1px solid #e9ecef;padding:.5rem .75rem;outline:0}
+    .ss-list{max-height:260px;overflow:auto;padding:.25rem 0;margin:0;list-style:none}
+    .ss-item{padding:.45rem .75rem;white-space:normal;line-height:1.2;cursor:pointer;display:flex;align-items:center;gap:.5rem}
+    .ss-item:hover,.ss-item.active{background:#f6f7f9}
+    .ss-native{display:none !important}
+    .ss-clear{margin:.25rem .75rem .5rem auto;font-size:.8rem;color:#0d6efd;cursor:pointer}
+    .ss-no-search .ss-search{display:none}
+
+    /* Equipos */
+    .eq-row .form-control,.eq-row .form-select{height:38px}
+    .eq-block{border:1px solid #e9ecef;border-radius:.5rem;background:#fafafa;padding:.75rem .75rem .5rem}
+    .eq-title{font-weight:700;color:#111;margin-bottom:.35rem}
+    .equipos-controls{margin-bottom:.5rem}
+    .equipos-gap{margin-top:.5rem}
+
+    /* Clock Picker */
+    .clock-input{cursor:pointer;}
+    .clock-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:11000;align-items:center;justify-content:center}
+    .clock-modal{background:#fff;color:#111;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:340px;max-width:90vw}
+    .clock-head{padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+    .clock-face-wrap{padding:16px 16px 0}
+    .clock-face{position:relative;width:300px;height:300px;margin:0 auto;border-radius:50%;background:#f7f7f8;border:1px solid #e9e9ee}
+    .clock-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;background:#111;border-radius:50%}
+    .clock-number{position:absolute;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;user-select:none}
+    .clock-number:hover{background:#fff;border:1px solid #ddd}
+    .clock-stage{padding:6px 16px 0;text-align:center;color:#555}
+    .clock-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid #eee;justify-content:flex-end}
+    .btn-link{border:none;background:transparent;color:#0d6efd}
+
+    /* Directorio */
+    .dir-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:10000;align-items:center;justify-content:center}
+    .dir-modal{background:#fff;color:#111;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:700px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column}
+    .dir-head{padding:12px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:10px;justify-content:space-between}
+    .dir-title{font-weight:700}
+    .dir-body{padding:12px 16px;overflow:auto}
+    .dir-search{border:1px solid #ddd;border-radius:8px;padding:8px 10px;width:320px}
+    .dir-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .dir-card{border:1px solid #e6e6ea;border-radius:10px;padding:10px;cursor:pointer;background:#fafafa}
+    .dir-card:hover{background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-4 gap-2">
+    <div class="brandbar">
+      <span>WIN | Acceso a Nodos - 912567346</span>
+      <span class="brand-dot"></span>
+    </div>
+    <span class="badge badge-camp">Formulario</span>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <form action="#" method="post" enctype="multipart/form-data" class="row g-3" id="f" novalidate>
+
+      <!-- Nodo a Ingresar -->
+      <div class="col-12"><h5 class="section-title">Nodo a Ingresar</h5><hr></div>
+
+      <div class="col-md-4">
+        <label class="form-label">Nodo</label>
+        <select class="form-select" id="nodo" required>
+          <option value="" selected>— Seleccionar —</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Fecha de ingreso (programada)</label>
+        <input class="form-control" type="date" id="fecha_ingreso" required>
+        <div class="invalid-feedback" id="fi_err"></div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha de salida (programada)</label>
+        <input class="form-control" type="date" id="fecha_salida" required>
+        <div class="invalid-feedback" id="fs_err"></div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Hora de ingreso (programada)</label>
+        <input class="form-control clock-input" type="text" id="hora_ingreso" placeholder="--:--" required readonly>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Hora de salida (programada)</label>
+        <input class="form-control clock-input" type="text" id="hora_salida" placeholder="--:--" required readonly>
+        <div class="invalid-feedback" id="hs_err"></div>
+      </div>
+
+      <!-- Solicitante encargado -->
+      <div class="col-12 mt-2 d-flex align-items-center justify-content-between">
+        <h5 class="section-title m-0">Solicitante encargado</h5>
+        <div class="d-flex align-items-center gap-2">
+          <small class="text-muted me-2">Seleccionar en caso de ser personal de Infraestructura - O&M por parte de WIN - net </small>
+          <button type="button" id="btn_dir" class="btn btn-outline-secondary btn-sm">Solicitante</button>
+          <button type="button" id="btn_limpiar_sol" class="btn btn-outline-danger btn-sm">Limpiar</button>
+        </div>
+      </div>
+      <div class="col-12"><hr></div>
+
+      <div class="col-md-3">
+        <label class="form-label" for="sol_nombres">Solicitante - Nombres</label>
+        <input class="form-control" id="sol_nombres" maxlength="30" required placeholder="Nombres">
+        <div class="invalid-feedback" id="sol_nombres_err"></div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="sol_apepat">Solicitante - Ap. paterno</label>
+        <input class="form-control" id="sol_apepat" maxlength="40" required placeholder="Ap. paterno">
+        <div class="invalid-feedback" id="sol_apepat_err"></div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="sol_apemat">Solicitante - Ap. materno</label>
+        <input class="form-control" id="sol_apemat" maxlength="40" required placeholder="Ap. materno">
+        <div class="invalid-feedback" id="sol_apemat_err"></div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="sol_tel">Solicitante - N° de teléfono</label>
+        <input class="form-control" id="sol_tel" inputmode="numeric" maxlength="9" required placeholder="Teléfono (9 dígitos)">
+        <div class="invalid-feedback" id="sol_tel_err"></div>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label" for="sol_tipodoc">Solicitante - Tipo doc.</label>
+        <select class="form-select" id="sol_tipodoc" required>
+          <option value="" selected>— Seleccionar —</option>
+          <option value="DNI">DNI</option>
+          <option value="CE">C.E</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="sol_numdoc">Solicitante - Nº doc.</label>
+        <input class="form-control" id="sol_numdoc" inputmode="numeric" maxlength="8" disabled placeholder="Doc (8)">
+        <div class="invalid-feedback" id="sol_doc_err"></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label" for="correo_nick">Correo (seleccionar dominio: @win.pe o @winempresas)</label>
+        <div class="input-group">
+          <input class="form-control" id="correo_nick" placeholder="USUARIO" required>
+          <select class="form-select" id="correo_dom" style="max-width:190px" required>
+            <option value="" selected>— Seleccionar —</option>
+            <option value="@win.pe">@win.pe</option>
+            <option value="@winempresas.pe">@winempresas.pe</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Trabajo a realizar -->
+      <div class="col-12 mt-2"><h5 class="section-title">Trabajo a realizar</h5><hr></div>
+
+      <div class="col-md-3">
+        <label class="form-label">Nivel de acceso</label>
+        <select class="form-select" id="nivel_acceso" required>
+          <option value="" selected>— Seleccionar —</option>
+          <option>PROGRAMADO</option>
+          <option>NO PROGRAMADO</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Trabajos para</label>
+        <select class="form-select" id="empresa" required>
+          <option value="" selected>— Seleccionar —</option>
+          <option value="WIN NET">WIN NET</option>
+          <option value="WIN EMPRESAS">WIN EMPRESAS</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Área responsable</label>
+        <select class="form-select" id="area_resp" required>
+          <option value="" selected>— Seleccionar —</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Área de apoyo</label>
+        <select class="form-select" id="area_apoyo" required>
+          <option value="" selected>— Seleccionar —</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Tipo de trabajo</label>
+        <select class="form-select" id="tipo_trabajo" required>
+          <option value="" selected>— Seleccionar —</option>
+        </select>
+      </div>
+
+      <!-- Equipos (INSTALACIÓN) -->
+      <div class="col-12" id="equipos_section" hidden>
+        <div class="row g-3 align-items-center equipos-controls">
+          <div class="col-md-3">
+            <label class="form-label">N° de equipos a instalar</label>
+            <select class="form-select" id="equipos_cant" aria-label="N° de equipos a instalar">
+              <option value="" selected>— Seleccionar —</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+        <div class="equipos-gap"></div>
+        <div id="equipos_rows" class="d-flex flex-column gap-2"></div>
+        <hr>
+      </div>
+
+      <!-- Equipos (RETIRO) -->
+      <div class="col-12" id="retiros_section" hidden>
+        <div class="row g-3 align-items-center equipos-controls">
+          <div class="col-md-3">
+            <label class="form-label">N° de equipos a retirar</label>
+            <select class="form-select" id="retiros_cant" aria-label="N° de equipos a retirar">
+              <option value="" selected>— Seleccionar —</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+        <div class="equipos-gap"></div>
+        <div id="retiros_rows" class="d-flex flex-column gap-2"></div>
+        <hr>
+      </div>
+
+      <div class="col-md-8">
+        <label class="form-label">Detalles del trabajo</label>
+        <input class="form-control" id="detalles_trabajo" maxlength="200" placeholder="Descripción breve (máx. 200 caracteres)" required>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Trabajo por contrata</label>
+        <select class="form-select" id="contrata" required>
+          <option value="" selected>— Seleccionar —</option>
+          <option value="NO">NO</option>
+          <option value="SI">SI</option>
+        </select>
+      </div>
+      <div class="col-md-5" id="wrap_contrata" style="display:none;">
+        <label class="form-label">Nombre de la contrata</label>
+        <input class="form-control" id="nombre_contrata" maxlength="80" placeholder="Nombre de la contrata">
+        <div class="invalid-feedback" id="contrata_err"></div>
+      </div>
+      <div class="col-md-4" id="wrap_sctr" style="display:none;">
+        <label class="form-label">SCTR del personal a ingresar</label>
+        <input class="form-control" type="file" id="sctr" accept="application/pdf">
+        <div class="form-text" style="color:var(--ink-soft)">PDF, máx. 4 MB. (Obligatorio)</div>
+        <div class="invalid-feedback" id="sctr_err"></div>
+      </div>
+
+      <!-- Personal -->
+      <div class="col-12 mt-2"><h5 class="section-title">Personal a ingresar</h5><hr></div>
+
+      <div class="col-12 d-flex align-items-center">
+        <div class="me-2">Personal N°:</div>
+        <select class="form-select w-auto me-4" id="cant_personal" aria-label="Cantidad de personal">
+          <option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        </select>
+
+        <div class="form-check ms-3">
+          <input class="form-check-input" type="checkbox" id="p1_igual_sol">
+          <label class="form-check-label" for="p1_igual_sol">*Seleccione esta casilla solo si el solicitante encargado accederá al nodo; en caso contrario, no la seleccione.</label>
+        </div>
+      </div>
+
+      <div class="col-12" id="personal">
+        <!-- p1 -->
+        <div class="row g-3 align-items-end mb-1" data-pi="1">
+          <div class="col-md-2"><input class="form-control" placeholder="Nombres (1)" id="p1_nombres" maxlength="80"><div class="invalid-feedback" id="p1_nombres_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. paterno (1)" id="p1_apepat" maxlength="80"><div class="invalid-feedback" id="p1_apepat_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. materno (1)" id="p1_apemat" maxlength="80"><div class="invalid-feedback" id="p1_apemat_err"></div></div>
+          <div class="col-md-2"><select class="form-select" id="p1_tipodoc"><option value="" selected>— Tipo doc. —</option><option value="DNI">DNI</option><option value="CE">C.E</option></select></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Doc (1)" id="p1_numdoc" inputmode="numeric" maxlength="8" disabled><div class="invalid-feedback" id="p1_doc_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Teléfono (1)" id="p1_tel" inputmode="numeric" maxlength="9"><div class="invalid-feedback" id="p1_tel_err"></div></div>
+        </div>
+        <!-- p2 -->
+        <div class="row g-3 align-items-end mb-1" data-pi="2" hidden>
+          <div class="col-md-2"><input class="form-control" placeholder="Nombres (2)" id="p2_nombres" maxlength="80"><div class="invalid-feedback" id="p2_nombres_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. paterno (2)" id="p2_apepat" maxlength="80"><div class="invalid-feedback" id="p2_apepat_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. materno (2)" id="p2_apemat" maxlength="80"><div class="invalid-feedback" id="p2_apemat_err"></div></div>
+          <div class="col-md-2"><select class="form-select" id="p2_tipodoc"><option value="" selected>— Tipo doc. —</option><option value="DNI">DNI</option><option value="CE">C.E</option></select></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Doc (2)" id="p2_numdoc" inputmode="numeric" maxlength="8" disabled><div class="invalid-feedback" id="p2_doc_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Teléfono (2)" id="p2_tel" inputmode="numeric" maxlength="9"><div class="invalid-feedback" id="p2_tel_err"></div></div>
+        </div>
+        <!-- p3 -->
+        <div class="row g-3 align-items-end mb-1" data-pi="3" hidden>
+          <div class="col-md-2"><input class="form-control" placeholder="Nombres (3)" id="p3_nombres" maxlength="80"><div class="invalid-feedback" id="p3_nombres_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. paterno (3)" id="p3_apepat" maxlength="80"><div class="invalid-feedback" id="p3_apepat_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. materno (3)" id="p3_apemat" maxlength="80"><div class="invalid-feedback" id="p3_apemat_err"></div></div>
+          <div class="col-md-2"><select class="form-select" id="p3_tipodoc"><option value="" selected>— Tipo doc. —</option><option value="DNI">DNI</option><option value="CE">C.E</option></select></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Doc (3)" id="p3_numdoc" inputmode="numeric" maxlength="8" disabled><div class="invalid-feedback" id="p3_doc_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Teléfono (3)" id="p3_tel" inputmode="numeric" maxlength="9"><div class="invalid-feedback" id="p3_tel_err"></div></div>
+        </div>
+        <!-- p4 -->
+        <div class="row g-3 align-items-end mb-1" data-pi="4" hidden>
+          <div class="col-md-2"><input class="form-control" placeholder="Nombres (4)" id="p4_nombres" maxlength="80"><div class="invalid-feedback" id="p4_nombres_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. paterno (4)" id="p4_apepat" maxlength="80"><div class="invalid-feedback" id="p4_apepat_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Ap. materno (4)" id="p4_apemat" maxlength="80"><div class="invalid-feedback" id="p4_apemat_err"></div></div>
+          <div class="col-md-2"><select class="form-select" id="p4_tipodoc"><option value="" selected>— Tipo doc. —</option><option value="DNI">DNI</option><option value="CE">C.E</option></select></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Doc (4)" id="p4_numdoc" inputmode="numeric" maxlength="8" disabled><div class="invalid-feedback" id="p4_doc_err"></div></div>
+          <div class="col-md-2"><input class="form-control" placeholder="Teléfono (4)" id="p4_tel" inputmode="numeric" maxlength="9"><div class="invalid-feedback" id="p4_tel_err"></div></div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-warning px-4" id="btn_enviar" type="submit">Enviar solicitud</button>
+      </div>
+    </form>
+  </div></div>
+
+  <div class="mt-3 text-light">
+    <small class="muted">Demo: si no configuras FLOW_URL, el payload se imprime en consola (F12).</small>
+  </div>
+</div>
+
+<!-- Clock Picker -->
+<div class="clock-overlay" id="clock_overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="clock-modal">
+    <div class="clock-head">
+      <div>Selecciona hora</div>
+      <div class="clock-display"><span id="clk_h">00</span>:<span id="clk_m">00</span></div>
+    </div>
+    <div class="clock-face-wrap">
+      <div class="clock-face" id="clock_face">
+        <div class="clock-center"></div>
+      </div>
+      <div class="clock-stage" id="clock_stage">Elige la hora</div>
+    </div>
+    <div class="clock-foot">
+      <button type="button" class="btn-link" id="clk_back_hours" style="display:none;margin-right:auto">← Volver a horas</button>
+      <button type="button" class="btn-link" id="clk_cancel">Cancelar</button>
+      <button type="button" class="btn btn-primary btn-sm" id="clk_ok" disabled>Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Directorio -->
+<div class="dir-overlay" id="dir_overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="dir-modal">
+    <div class="dir-head">
+      <div class="dir-title">Personal de infraestructura-O&M Win</div>
+      <input type="text" class="dir-search" id="dir_search" placeholder="Buscar por nombre, doc o correo…">
+    </div>
+    <div class="dir-body"><div id="dir_hint" class="text-muted mb-2" style="font-size:.9rem"></div><div class="dir-list" id="dir_list"></div></div>
+    <div class="dir-foot"><button type="button" class="btn btn-outline-secondary btn-sm" id="dir_close">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+  const FLOW_URL = ""; // opcional: pega tu URL del Flow aquí
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const f = $('#f'), btn = $('#btn_enviar');
+
+  /* ===== Directorio (datos) ===== */
+  const PERSONAL_PREDEF = [
+    {empresa:'WIN NET', nombres:'Elisvan Jordan', apepat:'Guzman', apemat:'Espinoza', tipodoc:'DNI', numdoc:'74225916', tel:'942503907', email:'eguzmane@win.pe'},
+    {empresa:'WIN NET', nombres:'Bryan',  apepat:'Villa', apemat:'Castillo', tipodoc:'DNI', numdoc:'74225916', tel:'930899277', email:'bvilla@win.pe'},
+    {empresa:'WIN NET', nombres:'Jhan Carlos',  apepat:'Rojas', apemat:'Hurtado', tipodoc:'DNI', numdoc:'74225916', tel:'966841152', email:'jrojash@win.pe'},
+    {empresa:'WIN NET', nombres:'Alberto',  apepat:'Castillo', apemat:'Huisa', tipodoc:'DNI', numdoc:'74225916', tel:'980670910', email:'acastilloh@win.pe'},
+    {empresa:'WIN NET', nombres:'Pedro Fabio',  apepat:'Quezada', apemat:'Cieza', tipodoc:'DNI', numdoc:'74225916', tel:'981049443', email:'pquezada@win.pe'},
+    {empresa:'WIN NET', nombres:'Antonio Gabino',  apepat:'Villoslada', apemat:'Villegas', tipodoc:'DNI', numdoc:'74225916', tel:'993087691', email:'avilloslada@win.pe'},
+    {empresa:'WIN NET', nombres:'Maxvel Alex',  apepat:'Asencios', apemat:'Picon', tipodoc:'DNI', numdoc:'74225916', tel:'917984351', email:'masencios@win.pe'},
+    {empresa:'WIN NET', nombres:'Fredy',  apepat:'Picho', apemat:'Asto', tipodoc:'DNI', numdoc:'74225916', tel:'910122308', email:'fpicho@win.pe'},
+    {empresa:'WIN NET', nombres:'Moises Angel',  apepat:'Quispe', apemat:'Sanchez', tipodoc:'DNI', numdoc:'74225916', tel:'939205235', email:'maquispe@win.pe'},
+    {empresa:'WIN NET', nombres:'John Kevin',  apepat:'Avellaneda', apemat:'Raymundo', tipodoc:'DNI', numdoc:'74225916', tel:'991486402', email:'javellaneda@win.pe'},
+    {empresa:'WIN NET', nombres:'Charles Jhonatan',  apepat:'Contreras', apemat:'Cajo', tipodoc:'DNI', numdoc:'74225916', tel:'964237058', email:'ccontrerasc@win.pe'}
+  ];
+
+  function openDir(){
+    const empresaSel = $('#empresa').value || 'WIN NET';
+    const list = $('#dir_list'); const hint = $('#dir_hint'); const q = $('#dir_search').value.trim().toLowerCase();
+    list.innerHTML = '';
+    const data = PERSONAL_PREDEF
+      .filter(p => !empresaSel || p.empresa === empresaSel)
+      .filter(p => !q || [p.nombres,p.apepat,p.apemat,p.numdoc,p.email].join(' ').toLowerCase().includes(q));
+    hint.textContent = empresaSel ? `Mostrando personal de: ${empresaSel}` : 'Mostrando todo el personal';
+
+    data.forEach(p=>{
+      const card = document.createElement('div'); card.className='dir-card';
+      const nombre = `${p.nombres} ${p.apepat} ${p.apemat}`;
+      card.innerHTML = `
+        <div class="fw-bold">${nombre}</div>
+        <div style="font-size:.9rem">${p.tipodoc}: ${p.numdoc} • Tel: ${p.tel}</div>
+        <div style="font-size:.9rem">${p.email}</div>
+      `;
+      card.addEventListener('click', ()=>{ fillSolicitanteFrom(p); closeDir(); });
+      list.appendChild(card);
+    });
+
+    $('#dir_overlay').style.display='flex';
+    $('#dir_search').focus();
+  }
+  function closeDir(){ $('#dir_overlay').style.display='none'; }
+  $('#btn_dir').addEventListener('click', openDir);
+  $('#dir_close').addEventListener('click', closeDir);
+  $('#dir_search').addEventListener('input', openDir);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDir(); });
+
+  function fillSolicitanteFrom(p){
+    $('#sol_nombres').value = (p.nombres||'').toUpperCase();
+    $('#sol_apepat').value  = (p.apepat ||'').toUpperCase();
+    $('#sol_apemat').value  = (p.apemat ||'').toUpperCase();
+
+    $('#sol_tipodoc').value = p.tipodoc || '';
+    toggleSolNumDoc();
+    $('#sol_numdoc').value = p.numdoc || '';
+    $('#sol_tel').value    = p.tel    || '';
+
+    if(p.email){
+      const [nick, domRaw] = p.email.split('@');
+      const dom = domRaw ? '@'+domRaw : '';
+      $('#correo_nick').value = nick || '';
+      $('#correo_dom').value = (dom === '@win.pe' || dom === '@winempresas.pe') ? dom : '';
+    }
+
+    // refrescar validaciones
+    ['sol_nombres','sol_apepat','sol_apemat','sol_tel','sol_numdoc'].forEach(id=>{
+      const el = $('#'+id); el.dispatchEvent(new Event('input',{bubbles:true}));
+    });
+
+    // si está activado "igual al solicitante", copiar también
+    if($('#p1_igual_sol').checked){
+      const evt = new Event('input',{bubbles:true});
+      ['sol_nombres','sol_apepat','sol_apemat','sol_tipodoc','sol_numdoc','sol_tel'].forEach(id=>$('#'+id).dispatchEvent(evt));
+    }
+
+    // actualizar SmartSelect de selects simples
+    ['sol_tipodoc','correo_dom'].forEach(id=>{
+      const el=$('#'+id); if(smart.has(el)) smart.get(el).setText(el.selectedOptions[0]?.textContent||'');
+    });
+  }
+
+  function clearSolicitanteUI(){
+    $('#sol_nombres').value = '';
+    $('#sol_apepat').value  = '';
+    $('#sol_apemat').value  = '';
+    $('#sol_tel').value     = '';
+    $('#sol_tipodoc').value = '';
+    $('#sol_numdoc').value  = '';
+    $('#correo_nick').value = '';
+    $('#correo_dom').value  = '';
+
+    toggleSolNumDoc();
+    ['sol_nombres_err','sol_apepat_err','sol_apemat_err','sol_tel_err','sol_doc_err'].forEach(id=>{ const el=$('#'+id); if(el) el.textContent=''; });
+    ['sol_nombres','sol_apepat','sol_apemat','sol_tel','sol_numdoc'].forEach(id=>{ const el=$('#'+id); el.classList.remove('is-invalid'); el.setCustomValidity(''); });
+
+    ['sol_tipodoc','correo_dom'].forEach(id=>{ const el=$('#'+id); if(smart.has(el)) smart.get(el).setText(''); });
+
+    if($('#p1_igual_sol').checked){
+      $('#p1_igual_sol').checked = false;
+      handleP1Toggle();
+    }
+  }
+  $('#btn_limpiar_sol').addEventListener('click', clearSolicitanteUI);
+
+  /* Catálogos */
+  const NODOS = ["200 MILLAS","ANGAMOS","ARRIOLA","AURELIO SOUZA","AREQUIPA SOCABAYA","AREQUIPA CERRO COLORADO","AREQUIPA LA CULTURA","AREQUIPA MIRAFLORES","BARRANCA","BARRANCO","BAYOVAR","BENVENUTTO","BUCKINGHAM","CALLAO","CAMANA","CAQUETA","CATACAOS","CHANCAY","CHICLAYO MAGNOLIAS","CHIMBOTE LAS PALMERAS","CHIMBOTE MANCO CAPAC","CHORRILLOS","CIPRESES","CONQUISTADORES","CUZCO TUPAC AMARU","CUZCO WANCHAQ","EL SAUCE","FLAMENGOS","FRANCISCO MOREYRA","GALVEZ II","GERARDO UNGER","GUARDIA PERUANA","HIPOLITO UNANUE","HUACHO","HUANDOY","HUARAL","HUANCAYO CENTRO","HUANCAYO TAMBO","JUAN PABLO","LA ENSENADA","LA MOLINA","LAMBAYEQUE OUTDOOR","LINCE","LOS ALAMOS","LOS JARDINES","LOS MIRABLES","MARIATEGUI","NATALIO SANCHEZ","NIÑO JESUS","PACHACAMAC","PELITRES","PERSHING","PIMENTEL INDOOR","PISTA NUEVA","PIURA GARDENIAS","PUCUSANA","PUNTA HERMOSA","REPUBLICA DE PANAMA","SALAMANCA","SAN LUIS","SAN PEDRO","SAN REMO","SANTA FE","SANTA ROSA","SANTOS CHOCANO","SUCRE","TRES DE MAYO","TRIGAL II","TRUIJILLO LA MERCED","TRUJILLO SANTA ROSA","TUNGASUCA","URUGUAY","VARELA","VILLA EL SALVADOR","VITARTE","ZARATE"];
+  const TIPOS_TRABAJO = ["ACONDICIONAMIENTO, ETIQUETADO ODF / LIMPIEZA DE PICTELES","ACTIVACIÓN DE ENLACE","ATENCIÓN DE INCIDENCIA","AUDITORIA DE EQUIPOS WIN","CABLEADO DE F.O.","CAMBIO DE PATCH CORD","CAMBIO DE TARJETA CONTROLADORA EN OLT.","CAMBIO DE TRANSCEIVER","FUSIONES DE F.O.","IMPLEMENTACIÓN DE UN ENLACE","IMPLEMENTACIÓN DE UN NUEVO CIRCUITO","INGRESO DE F.O./INSTALACIÓN DE P.P.","INSTALACIÓN DE EQUIPOS","INSTALACIÓN DE PATCH CORD Y TRANSCEIVER","INSTALACIÓN DE TRANSCEIVER","INVENTARIO DE EQUIPOS","INVENTARIO DE HILOS","JUMPEO DE PATCH CORD","MAPEO DE ESPACIO EN RACK WIN Y PATCH CORD","MEDICIONES REFLECTOMÉTRICAS","MEDICIONES REFLECTOMÉTRICAS, INSTALACIÓN DE PATCH CORD Y TRANSCEIVER","MIGRACIÓN DE EQUIPO","REEMPLAZO DE EQUIPO","REINICIO DE EQUIPOS","RETIRO DE ANTENA","RETIRO DE EQUIPOS","ROTULADO","TROUBLESHOOTING","UPGRADE DE ENLACES","VALIDACIÓN DE ENLACES","VALIDACIÓN DE PUERTO Y JUMPEO","VISITA TÉCNICA"];
+  const AREAS_NET = ["CIBERSEGURIDAD-WIN","IMPLEMENTACIONES-WIN","INFRAESTRUCTURA-WIN","INGENIERIA-WIN","MANTENIMIENTO PEXT-WIN","MANTENIMIENTO Y EMERGENCIAS-WIN","MANTENIMIENTO Y EMERGENCIA PEXT-WIN","NOC-WIN","O&M-WIN","PERSONAL TECNICO-WIN","PEXT-WIN","PLANIFICACION DE RED B2C-WIN"];
+  const AREAS_EMP = ["ALOB-WIN EMPRESAS","CIBERSEGURIDAD-WIN EMPRESAS","CORE-WIN EMPRESAS","IMPLEMENTACIONES-WIN EMPRESAS","INFRAESTRUCTURA-WIN EMPRESAS","INGENIERIA-WIN EMPRESAS","NOC-WIM EMPRESAS","O&M-WIN EMPRESAS","PEXT-WIN EMPRESAS","SOS-WIN EMPRESAS"];
+  const AREAS_APOYO_NET = ["Ninguna","Comunicaciones Unificadas","Core","Cybersoc","Infraestructura y Mantenimiento","Ingeneria","Instalaciones","Mantenimiento y emergencia","Mantenimiento y Emergencia PEXT","NOC","O&M","ONI","Planificacion de Red B2C","Planta Externa y Emergencia","ZTE"];
+  const AREAS_APOYO_EMP = ["Ninguna","ALOB","Core","Cybersoc","Emfitel","F&S","INETEL","Infraestructura y Mantenimiento","Ingenieria","Instalaciones","NOC","O&M","NOC & Infraestructura","ONI","PEXT y Emergencia","SOC","TAC","Telener"];
+  const EQUIPOS = ["ROUTER","OLT","SWITCH","CÁMARA","ANTENA","UPS","RECTIFICADOR","ODF","PATCH PANEL"];
+  const RACKS  = ["Rack 01","Rack 02","Rack 03","Rack 04","Rack 05","Rack 06"];
+  const RU_LIST = Array.from({length:20},(_,i)=>String(i+1));
+
+  function load(list, el, opts={sort:true}){
+    const placeholder = el.querySelector('option[value=""]') ? true : false;
+    el.innerHTML = placeholder ? '<option value="">— Seleccionar —</option>' : '';
+    const data = opts.sort ? [...new Set(list)].sort((a,b)=> a.localeCompare(b,'es',{sensitivity:'base'})) : list;
+    data.forEach(v => el.add(new Option(v, v)));
+    if (placeholder){ el.value = ""; }
+    if (smart.has(el)) smart.get(el).rebuild();
+  }
+
+  const emp = $('#empresa'), ar = $('#area_resp'), ap = $('#area_apoyo');
+  function loadAreas(){
+    if (emp.value === "WIN NET"){ load(AREAS_NET, ar); load(AREAS_APOYO_NET, ap); }
+    else if (emp.value === "WIN EMPRESAS"){ load(AREAS_EMP, ar); load(AREAS_APOYO_EMP, ap); }
+    else { ar.innerHTML = '<option value="">— Seleccionar —</option>'; ap.innerHTML = '<option value="">— Seleccionar —</option>'; if (smart.has(ar)) smart.get(ar).rebuild(); if (smart.has(ap)) smart.get(ap).rebuild(); }
+  }
+
+  /* Fechas y horas */
+  const fi = $('#fecha_ingreso'), fs = $('#fecha_salida');
+  const hi = $('#hora_ingreso'), hs = $('#hora_salida');
+  const today = new Date();
+  const MIN_INGRESO = today.toISOString().slice(0,10);
+  fi.min = MIN_INGRESO; fs.min = MIN_INGRESO;
+  function setErr(id, msg){ const el = $('#'+id); if(el) el.textContent = msg || ''; }
+  function validateHoras(){
+    setErr('hs_err','');
+    if(fi.value && fs.value && fi.value === fs.value && hi.value && hs.value && hs.value < hi.value){
+      setErr('hs_err','Hora de salida no puede ser menor que la de ingreso en el mismo día.');
+      hs.setCustomValidity('Hora de salida < hora de ingreso');
+    } else { hs.setCustomValidity(''); }
+  }
+  function clampFechaIngreso(){ if(fs.value && fs.value < fi.value){ fs.value = fi.value; setErr('fs_err','La fecha de salida no puede ser anterior a la de ingreso.'); } else setErr('fs_err',''); fs.min = fi.value || MIN_INGRESO; validateHoras(); }
+  function clampFechaSalida(){ if(fs.value && fi.value && fs.value < fi.value){ setErr('fs_err','La fecha de salida no puede ser anterior a la de ingreso.'); fs.value = fi.value; } else setErr('fs_err',''); validateHoras(); }
+  fi.addEventListener('change', clampFechaIngreso);
+  fs.addEventListener('change', clampFechaSalida);
+  hi.addEventListener('input', validateHoras);
+  hs.addEventListener('input', validateHoras);
+
+  /* Validaciones básicas */
+  function onlyDigits(s){ return /^\d*$/.test(s); }
+  function validateDoc(input, errId){
+    const v = input.value.trim(); let msg = '';
+    if(v && !onlyDigits(v)) msg = 'Debe ser numérico.'; else if(v && v.length !== 8) msg = 'Son 8 dígitos.';
+    setErr(errId, msg); input.classList.toggle('is-invalid', !!msg); input.setCustomValidity(msg);
+  }
+  function validatePhone(input, errId){
+    const v = input.value.trim(); let msg = '';
+    if(v && !onlyDigits(v)) msg = 'Debe ser numérico.'; else if(v && v.length !== 9) msg = 'Son 9 dígitos.';
+    setErr(errId, msg); input.classList.toggle('is-invalid', !!msg); input.setCustomValidity(msg);
+  }
+  $('#sol_numdoc').addEventListener('input', ()=>validateDoc($('#sol_numdoc'),'sol_doc_err'));
+  $('#sol_tel').addEventListener('input', ()=>validatePhone($('#sol_tel'),'sol_tel_err'));
+  [1,2,3,4].forEach(i=>{
+    $('#p'+i+'_numdoc').addEventListener('input', ()=>validateDoc($('#p'+i+'_numdoc'),'p'+i+'_doc_err'));
+    $('#p'+i+'_tel').addEventListener('input', ()=>validatePhone($('#p'+i+'_tel'),'p'+i+'_tel_err'));
+  });
+
+  const NAME_IDS = ['sol_nombres','sol_apepat','sol_apemat','p1_nombres','p1_apepat','p1_apemat','p2_nombres','p2_apepat','p2_apemat','p3_nombres','p3_apepat','p3_apemat','p4_nombres','p4_apepat','p4_apemat','nombre_contrata'];
+  const NAME_ERR = {sol_nombres:'sol_nombres_err', sol_apepat:'sol_apepat_err', sol_apemat:'sol_apemat_err', p1_nombres:'p1_nombres_err', p1_apepat:'p1_apepat_err', p1_apemat:'p1_apemat_err', p2_nombres:'p2_nombres_err', p2_apepat:'p2_apepat_err', p2_apemat:'p2_apemat_err', p3_nombres:'p3_nombres_err', p3_apepat:'p3_apepat_err', p3_apemat:'p3_apemat_err', p4_nombres:'p4_nombres_err', p4_apepat:'p4_apepat_err', p4_apemat:'p4_apemat_err', nombre_contrata:'contrata_err'};
+  const rgxLetters = /^[A-ZÁÉÍÓÚÜÑ ]+$/i;
+  function validateName(input){
+    input.value = input.value.toUpperCase();
+    const v = input.value.trim(); let msg = '';
+    if(v && !rgxLetters.test(v)) msg = 'Este campo solo permite texto (sin números ni signos).';
+    const errId = NAME_ERR[input.id]; if(errId) setErr(errId, msg);
+    input.classList.toggle('is-invalid', !!msg); input.setCustomValidity(msg);
+  }
+  NAME_IDS.forEach(id=>{ const el = $('#'+id); if(el){ el.addEventListener('input', ()=>validateName(el)); el.addEventListener('blur', ()=>validateName(el)); }});
+
+  /* Contrata */
+  const c = $('#contrata');
+  function toggleContrata(){
+    const on = c.value === "SI";
+    $('#wrap_contrata').style.display = on ? "block" : "none";
+    $('#nombre_contrata').required = on;
+    $('#wrap_sctr').style.display = "block"; $('#sctr').required = true;
+  }
+  c.addEventListener('change', toggleContrata); toggleContrata();
+
+  $('#sctr').addEventListener('change', ()=>{
+    const file = $('#sctr').files?.[0]; let msg = '';
+    if(file && file.size > 4*1024*1024) msg = 'El PDF no debe superar 4 MB.';
+    setErr('sctr_err', msg);
+    $('#sctr').classList.toggle('is-invalid', !!msg);
+    $('#sctr').setCustomValidity(msg);
+  });
+
+  /* Personal - cantidad */
+  const cant = $('#cant_personal');
+  function applyCantPersonal(){
+    const n = parseInt(cant.value,10);
+    $$('#personal [data-pi]').forEach(row=>{
+      const i = parseInt(row.dataset.pi,10);
+      const visible = i <= n;
+      row.hidden = !visible;
+      row.querySelectorAll('input,select').forEach(inp=>{
+        inp.required = visible;
+        if(!visible){ inp.classList.remove('is-invalid'); inp.setCustomValidity(''); inp.value=""; }
+      });
+    });
+    [1,2,3,4].forEach(i=>togglePersonaNumDoc(i));
+  }
+  cant.addEventListener('change', applyCantPersonal);
+
+  const p1Chk = $('#p1_igual_sol');
+  function copySolicitanteToP1(){
+    $('#p1_nombres').value = $('#sol_nombres').value.toUpperCase();
+    $('#p1_apepat').value  = $('#sol_apepat').value.toUpperCase();
+    $('#p1_apemat').value  = $('#sol_apemat').value.toUpperCase();
+    // Siempre DNI para p1
+    $('#p1_tipodoc').value = 'DNI';
+    if(smart.has($('#p1_tipodoc'))) smart.get($('#p1_tipodoc')).setText('DNI');
+    $('#p1_tipodoc').dispatchEvent(new Event('change',{bubbles:true}));
+
+    $('#p1_numdoc').value  = $('#sol_numdoc').value;
+
+    ['p1_nombres','p1_apepat','p1_apemat'].forEach(id=>validateName($('#'+id)));
+    validateDoc($('#p1_numdoc'),'p1_doc_err');
+
+    if($('#sol_tel').value.trim().length===9){
+      $('#p1_tel').value = $('#sol_tel').value.trim();
+      validatePhone($('#p1_tel'),'p1_tel_err');
+    }
+    togglePersonaNumDoc(1);
+  }
+  function lockP1(on){
+    ['p1_nombres','p1_apepat','p1_apemat','p1_tipodoc','p1_numdoc'].forEach(id=>{
+      const el = $('#'+id); el.disabled = on; el.required = !on; if(on) el.classList.remove('is-invalid');
+    });
+    $('#p1_tel').disabled = false; $('#p1_tel').required = true;
+  }
+  function clearFields(ids){
+    ids.forEach(id=>{
+      const el=$('#'+id); if(!el) return;
+      el.value = ""; el.classList.remove('is-invalid'); el.setCustomValidity('');
+      const errId = NAME_ERR[id]; if(errId) setErr(errId,'');
+      if(smart.has(el)) smart.get(el).setText('');
+    });
+  }
+  function handleP1Toggle(){ if(p1Chk.checked){ copySolicitanteToP1(); lockP1(true); } else { lockP1(false); clearFields(['p1_nombres','p1_apepat','p1_apemat','p1_tipodoc','p1_numdoc','p1_tel']); togglePersonaNumDoc(1); } }
+  p1Chk.addEventListener('change', handleP1Toggle);
+  ['sol_nombres','sol_apepat','sol_apemat','sol_tipodoc','sol_numdoc','sol_tel'].forEach(id=>{
+    $('#'+id).addEventListener('input', ()=>{ if(p1Chk.checked) copySolicitanteToP1(); });
+    $('#'+id).addEventListener('change', ()=>{ if(p1Chk.checked) copySolicitanteToP1(); });
+  });
+
+  function togglePersonaNumDoc(i){
+    const sel = $('#p'+i+'_tipodoc'); const num = $('#p'+i+'_numdoc'); if(!sel || !num) return;
+    const active = sel.value !== '';
+    num.disabled = !active;
+    if(!active){ num.value=''; num.classList.remove('is-invalid'); num.setCustomValidity(''); setErr('p'+i+'_doc_err',''); }
+  }
+  [1,2,3,4].forEach(i=>{ const s = $('#p'+i+'_tipodoc'); if(s){ s.addEventListener('change', ()=>togglePersonaNumDoc(i)); togglePersonaNumDoc(i); }});
+
+  function validarDNIsUnicos(){
+    const n = parseInt(cant.value,10); const dnIs = [];
+    for(let i=1;i<=n;i++){ const row = $('[data-pi="'+i+'"]'); if(row.hidden) continue; const v = $('#p'+i+'_numdoc').value.trim(); if(v) dnIs.push({i, v}); }
+    let dup = false; dnIs.forEach(a=>{ $('#p'+a.i+'_numdoc').setCustomValidity(''); });
+    for(let x=0; x<dnIs.length; x++){ for(let y=x+1; y<dnIs.length; y++){ if(dnIs[x].v === dnIs[y].v){ const elx = $('#p'+dnIs[x].i+'_numdoc'), ely = $('#p'+dnIs[y].i+'_numdoc'); elx.setCustomValidity('DNI duplicado.'); ely.setCustomValidity('DNI duplicado.'); elx.classList.add('is-invalid'); ely.classList.add('is-invalid'); setErr('p'+dnIs[y].i+'_doc_err','DNI duplicado.'); dup = true; } } }
+    return !dup;
+  }
+  [1,2,3,4].forEach(i=> $('#p'+i+'_numdoc').addEventListener('input', validarDNIsUnicos));
+
+  /* SmartSelect */
+  const smart = new Map();
+  function enhanceSelect(sel, placeholderText = '— Seleccionar —', opts = {search:true}){
+    const select = (typeof sel==='string') ? $(sel) : sel; if(!select) return;
+    if(smart.has(select)){ smart.get(select).rebuild(); return; }
+
+    const isMultiple = !!select.multiple;
+
+    const wrap = document.createElement('div'); wrap.className = 'ss-wrap';
+    if(opts && opts.search === false) wrap.classList.add('ss-no-search');
+
+    const display = document.createElement('div'); display.className='ss-display';
+    const text = document.createElement('div'); text.className='ss-text ss-placeholder'; text.textContent=placeholderText;
+    const caret = document.createElement('div'); caret.className='ss-caret'; caret.textContent='▾'; display.append(text, caret);
+
+    const panel = document.createElement('div'); panel.className='ss-panel';
+    const search = document.createElement('input'); search.type='text'; search.className='ss-search'; search.placeholder='Buscar...';
+    const list = document.createElement('ul'); list.className='ss-list';
+    panel.append(search, list);
+    if(isMultiple){
+      const clearBtn = document.createElement('div'); clearBtn.className='ss-clear'; clearBtn.textContent='Limpiar selección';
+      clearBtn.addEventListener('click', ()=>{
+        Array.from(select.options).forEach(o=>{ o.selected=false; });
+        updateDisplay(); select.dispatchEvent(new Event('change',{bubbles:true}));
+      });
+      panel.append(clearBtn);
+    }
+
+    select.classList.add('ss-native'); select.parentNode.insertBefore(wrap, select); wrap.appendChild(select); wrap.appendChild(display); wrap.appendChild(panel);
+
+    function updateDisplay(){
+      if(isMultiple){
+        const texts = Array.from(select.selectedOptions).map(o=>o.text);
+        text.textContent = texts.length ? texts.join(', ') : placeholderText;
+        text.classList.toggle('ss-placeholder', texts.length===0);
+      }else{
+        if(select.value){
+          text.textContent = select.selectedOptions[0]?.text || placeholderText;
+          text.classList.remove('ss-placeholder');
+        }else{
+          text.textContent = placeholderText;
+          text.classList.add('ss-placeholder');
+        }
+      }
+    }
+
+    function buildList(){
+      list.innerHTML = '';
+      Array.from(select.options).forEach(o=>{
+        if(o.value==='') return;
+        const li = document.createElement('li'); li.className='ss-item'; li.dataset.txt = o.text.toLowerCase();
+        if(isMultiple){
+          const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = o.selected;
+          const lbl = document.createElement('span'); lbl.textContent = o.text;
+          cb.addEventListener('change', ()=>{ o.selected = cb.checked; updateDisplay(); select.dispatchEvent(new Event('change',{bubbles:true})); });
+          li.append(cb,lbl);
+          list.appendChild(li);
+        }else{
+          li.textContent = o.text;
+          li.addEventListener('click', ()=>{ setValue(o.value, o.text); close(); });
+          list.appendChild(li);
+        }
+      });
+      updateDisplay();
+    }
+
+    const api = { rebuild(){ buildList(); }, setText(t){ text.textContent = t ? t : placeholderText; text.classList.toggle('ss-placeholder', !t); } };
+    smart.set(select, api);
+
+    function open(){ wrap.classList.add('open'); if(!(opts && opts.search===false)) search.focus(); }
+    function close(){ wrap.classList.remove('open'); }
+    function toggle(){ wrap.classList.contains('open') ? close() : open(); }
+    function setValue(val, txt){ select.value = val; api.setText(txt); select.dispatchEvent(new Event('change',{bubbles:true})); }
+    function filter(q){ const k = q.trim().toLowerCase(); Array.from(list.children).forEach(li=>{ li.style.display = li.dataset.txt?.includes(k) ? '' : 'none'; }); }
+
+    display.addEventListener('click', toggle);
+    search.addEventListener('input', ()=>filter(search.value));
+    document.addEventListener('click', (e)=>{ if(!wrap.contains(e.target)) close(); });
+
+    buildList(); return api;
+  }
+
+  /* Clock Picker (simple) */
+  const clk = {
+    overlay: $('#clock_overlay'),
+    face: $('#clock_face'),
+    hEl: $('#clk_h'),
+    mEl: $('#clk_m'),
+    stageEl: $('#clock_stage'),
+    okBtn: $('#clk_ok'),
+    cancelBtn: $('#clk_cancel'),
+    backBtn: $('#clk_back_hours'),
+    target: null, hour: 0, minute: 0, stage: 'hour'
+  };
+  function radPos(value, total, r){ const ang = (value/total)*2*Math.PI - Math.PI/2; const cx = 150 + r * Math.cos(ang); const cy = 150 + r * Math.sin(ang); return {left: cx-20, top: cy-20}; }
+  function clearFace(){ clk.face.querySelectorAll('.clock-number').forEach(n=>n.remove()); }
+  function drawHours(){ clearFace(); clk.stage='hour'; if(clk.stageEl) clk.stageEl.textContent='Elige la hora'; clk.backBtn.style.display='none'; clk.okBtn.disabled = true; for(let h=0; h<24; h++){ const outer = h<12; const r = outer ? 120 : 80; const pos = radPos(outer ? h : h-12, 12, r); const b = document.createElement('div'); b.className='clock-number'; b.style.left=pos.left+'px'; b.style.top=pos.top+'px'; b.textContent = String(h).padStart(2,'0'); b.addEventListener('click', ()=>{ clk.hour=h; clk.hEl.textContent=String(h).padStart(2,'0'); drawMinutes(); }); clk.face.appendChild(b); } }
+  function drawMinutes(){ clearFace(); clk.stage='minute'; if(clk.stageEl) clk.stageEl.textContent='Elige los minutos'; clk.backBtn.style.display='inline'; clk.okBtn.disabled = true; for(let m=0;m<60;m+=5){ const pos = radPos(m/5, 12, 120); const b = document.createElement('div'); b.className='clock-number'; b.style.left=pos.left+'px'; b.style.top=pos.top+'px'; b.textContent = String(m).padStart(2,'0'); b.addEventListener('click', ()=>{ clk.minute=m; clk.mEl.textContent=String(m).padStart(2,'0'); clk.okBtn.disabled=false; }); clk.face.appendChild(b); } }
+  function openClock(input){
+    clk.target = input;
+    const v = input.value && /^\d{2}:\d{2}$/.test(input.value) ? input.value.split(':') : ['00','00'];
+    clk.hour = parseInt(v[0],10); clk.minute = parseInt(v[1],10);
+    clk.hEl.textContent = String(clk.hour).padStart(2,'0'); clk.mEl.textContent = String(clk.minute).padStart(2,'0');
+    drawHours(); clk.overlay.style.display='flex';
+  }
+  function closeClock(){ clk.overlay.style.display='none'; clearFace(); clk.stage='hour'; clk.okBtn.disabled=true; }
+  clk.cancelBtn.addEventListener('click', ()=>closeClock());
+  clk.okBtn.addEventListener('click', ()=>{
+    const hh = String(clk.hour).padStart(2,'0'); const mm = String(clk.minute).padStart(2,'0');
+    clk.target.value = `${hh}:${mm}`;
+    clk.target.dispatchEvent(new Event('input',{bubbles:true}));
+    validateHoras(); closeClock();
+  });
+  clk.backBtn.addEventListener('click', ()=>drawHours());
+  document.addEventListener('click', (e)=>{ const i = e.target.closest('.clock-input'); if(i) openClock(i); });
+  document.addEventListener('focusin', (e)=>{ const i = e.target.closest('.clock-input'); if(i) openClock(i); });
+  document.addEventListener('keydown', (e)=>{ const i = e.target.closest('.clock-input'); if(i && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); openClock(i); }});
+
+  function toggleSolNumDoc(){
+    const hasType = $('#sol_tipodoc').value !== '';
+    const num = $('#sol_numdoc'); num.disabled = !hasType;
+    if(!hasType){ num.value = ''; num.classList.remove('is-invalid'); num.setCustomValidity(''); setErr('sol_doc_err',''); }
+  }
+  $('#sol_tipodoc').addEventListener('change', toggleSolNumDoc); toggleSolNumDoc();
+
+  /* ===== Bloque Equipos (INSTALACIÓN) ===== */
+  const tipoTrabajo = $('#tipo_trabajo');
+  const equiposSection = $('#equipos_section');
+  const equiposCant = $('#equipos_cant');
+  const equiposRows = $('#equipos_rows');
+
+  function buildEquipoBlock(i){
+    const block = document.createElement('div');
+    block.className = 'eq-block';
+    block.dataset.idx = i;
+
+    block.innerHTML = `
+      <div class="eq-title">Equipo a instalar ${i}</div>
+      <div class="row g-2 align-items-center eq-row">
+        <div class="col-md-2">
+          <select class="form-select eq_equipo" id="eq${i}_equipo" aria-label="Equipo a instalar ${i}">
+            <option value="" selected>— Equipo —</option>
+          </select>
+        </div>
+        <div class="col-md-2 eq_wrap_marca" hidden>
+          <input class="form-control eq_marca" id="eq${i}_marca" maxlength="60" placeholder="Marca">
+        </div>
+        <div class="col-md-2 eq_wrap_modelo" hidden>
+          <input class="form-control eq_modelo" id="eq${i}_modelo" maxlength="60" placeholder="Modelo">
+        </div>
+        <div class="col-md-2 eq_wrap_serie" hidden>
+          <input class="form-control eq_serie" id="eq${i}_serie" maxlength="60" placeholder="Serie">
+        </div>
+        <div class="col-md-2 eq_wrap_rack" hidden>
+          <select class="form-select eq_rack" id="eq${i}_rack" aria-label="Rack ${i}">
+            <option value="" selected>— Rack —</option>
+          </select>
+        </div>
+        <div class="col-md-2 eq_wrap_ru" hidden>
+          <select class="form-select eq_ru" id="eq${i}_ru" aria-label="RU ${i}" multiple></select>
+        </div>
+      </div>
+    `;
+    equiposRows.appendChild(block);
+
+    const selEq = block.querySelector('.eq_equipo'); load(EQUIPOS, selEq);
+    selEq.querySelector('option[value=""]').textContent = '— Equipo —';
+    enhanceSelect(selEq, '— Equipo —');
+
+    const selRack = block.querySelector('.eq_rack'); load(RACKS, selRack); enhanceSelect(selRack, '— Rack —', {search:false});
+    const selRU = block.querySelector('.eq_ru'); load(RU_LIST, selRU, {sort:false}); enhanceSelect(selRU, '— RU —', {search:false});
+
+    selEq.addEventListener('change', ()=>applyEquipoBlockRules(block));
+    return block;
+  }
+
+  function applyEquipoBlockRules(block){
+    const sel = block.querySelector('.eq_equipo');
+    const v = (sel.value || '').toUpperCase();
+    const wMarca=block.querySelector('.eq_wrap_marca'), wModelo=block.querySelector('.eq_wrap_modelo'), wSerie=block.querySelector('.eq_wrap_serie'), wRack=block.querySelector('.eq_wrap_rack'), wRU=block.querySelector('.eq_wrap_ru');
+    const iMarca=block.querySelector('.eq_marca'), iModelo=block.querySelector('.eq_modelo'), iSerie=block.querySelector('.eq_serie'), iRack=block.querySelector('.eq_rack'), iRU=block.querySelector('.eq_ru');
+
+    const clearRU = ()=>{ Array.from(iRU.options).forEach(o=>o.selected=false); if(smart.has(iRU)) smart.get(iRU).setText(''); };
+
+    if(!v){
+      [wMarca,wModelo,wSerie,wRack,wRU].forEach(w=>w.hidden=true);
+      [iMarca,iModelo,iSerie].forEach(i=>{ i.required=false; i.value=''; i.classList.remove('is-invalid'); i.setCustomValidity(''); });
+      iRack.required=false; iRack.value=''; if(smart.has(iRack)) smart.get(iRack).setText('');
+      iRU.required=false; clearRU();
+    }else{
+      wMarca.hidden=false; wModelo.hidden=false; wSerie.hidden=false;
+      iMarca.required=true; iModelo.required=true; iSerie.required=true;
+
+      const isSimple = (v === 'CÁMARA' || v === 'CAMARA' || v === 'ANTENA');
+      if(isSimple){
+        wRack.hidden=true; wRU.hidden=true;
+        iRack.required=false; iRU.required=false;
+        iRack.value=''; if(smart.has(iRack)) smart.get(iRack).setText('');
+        clearRU();
+      }else{
+        wRack.hidden=false; wRU.hidden=false;
+        iRack.required=true; iRU.required=true;
+      }
+    }
+  }
+
+  function ensureEquipoRows(){
+    // Ocultar todo cuando no hay cantidad
+    const val = equiposCant.value;
+    const want = parseInt(val,10);
+    for(let i=1;i<=4;i++){
+      let block = equiposRows.querySelector(`[data-idx="${i}"]`);
+      if(!block){ block = buildEquipoBlock(i); }
+      // limpiar y ocultar por defecto
+      block.style.display = 'none';
+      block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.classList.remove('is-invalid'); inp.setCustomValidity(''); });
+      const selEq = block.querySelector('.eq_equipo'); selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText('');
+      const selRack = block.querySelector('.eq_rack'); selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText('');
+      const selRU = block.querySelector('.eq_ru'); Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText('');
+      applyEquipoBlockRules(block);
+    }
+    if(!val) return;
+
+    // Mostrar los necesarios
+    for(let i=1;i<=want;i++){
+      const block = equiposRows.querySelector(`[data-idx="${i}"]`);
+      block.style.display = '';
+      applyEquipoBlockRules(block);
+    }
+  }
+
+  /* ===== Bloque Equipos (RETIRO) ===== */
+  const retirosSection = $('#retiros_section');
+  const retirosCant = $('#retiros_cant');
+  const retirosRows = $('#retiros_rows');
+
+  function buildRetiroBlock(i){
+    const block = document.createElement('div');
+    block.className = 'eq-block';
+    block.dataset.idx = i;
+
+    block.innerHTML = `
+      <div class="eq-title">Equipo a retirar ${i}</div>
+      <div class="row g-2 align-items-center eq-row">
+        <div class="col-md-2">
+          <select class="form-select rt_equipo" id="rt${i}_equipo" aria-label="Equipo retirar ${i}">
+            <option value="" selected>— Equipo —</option>
+          </select>
+        </div>
+        <div class="col-md-2 rt_wrap_marca" hidden>
+          <input class="form-control rt_marca" id="rt${i}_marca" maxlength="60" placeholder="Marca">
+        </div>
+        <div class="col-md-2 rt_wrap_modelo" hidden>
+          <input class="form-control rt_modelo" id="rt${i}_modelo" maxlength="60" placeholder="Modelo">
+        </div>
+        <div class="col-md-2 rt_wrap_serie" hidden>
+          <input class="form-control rt_serie" id="rt${i}_serie" maxlength="60" placeholder="Serie">
+        </div>
+        <div class="col-md-2 rt_wrap_rack" hidden>
+          <select class="form-select rt_rack" id="rt${i}_rack" aria-label="Rack retirar ${i}">
+            <option value="" selected>— Rack —</option>
+          </select>
+        </div>
+        <div class="col-md-2 rt_wrap_ru" hidden>
+          <select class="form-select rt_ru" id="rt${i}_ru" aria-label="RU retirar ${i}" multiple></select>
+        </div>
+      </div>
+    `;
+    retirosRows.appendChild(block);
+
+    const selEq = block.querySelector('.rt_equipo'); load(EQUIPOS, selEq);
+    selEq.querySelector('option[value=""]').textContent = '— Equipo —';
+    enhanceSelect(selEq, '— Equipo —');
+
+    const selRack = block.querySelector('.rt_rack'); load(RACKS, selRack); enhanceSelect(selRack, '— Rack —', {search:false});
+    const selRU = block.querySelector('.rt_ru'); load(RU_LIST, selRU, {sort:false}); enhanceSelect(selRU, '— RU —', {search:false});
+
+    selEq.addEventListener('change', ()=>applyRetiroBlockRules(block));
+    return block;
+  }
+
+  function applyRetiroBlockRules(block){
+    const sel = block.querySelector('.rt_equipo');
+    const v = (sel.value || '').toUpperCase();
+    const wMarca=block.querySelector('.rt_wrap_marca'), wModelo=block.querySelector('.rt_wrap_modelo'), wSerie=block.querySelector('.rt_wrap_serie'), wRack=block.querySelector('.rt_wrap_rack'), wRU=block.querySelector('.rt_wrap_ru');
+    const iMarca=block.querySelector('.rt_marca'), iModelo=block.querySelector('.rt_modelo'), iSerie=block.querySelector('.rt_serie'), iRack=block.querySelector('.rt_rack'), iRU=block.querySelector('.rt_ru');
+
+    const clearRU = ()=>{ Array.from(iRU.options).forEach(o=>o.selected=false); if(smart.has(iRU)) smart.get(iRU).setText(''); };
+
+    if(!v){
+      [wMarca,wModelo,wSerie,wRack,wRU].forEach(w=>w.hidden=true);
+      [iMarca,iModelo,iSerie].forEach(i=>{ i.required=false; i.value=''; i.classList.remove('is-invalid'); i.setCustomValidity(''); });
+      iRack.required=false; iRack.value=''; if(smart.has(iRack)) smart.get(iRack).setText('');
+      iRU.required=false; clearRU();
+    }else{
+      wMarca.hidden=false; wModelo.hidden=false; wSerie.hidden=false;
+      iMarca.required=true; iModelo.required=true; iSerie.required=true;
+
+      const isSimple = (v === 'CÁMARA' || v === 'CAMARA' || v === 'ANTENA');
+      if(isSimple){
+        wRack.hidden=true; wRU.hidden=true;
+        iRack.required=false; iRU.required=false;
+        iRack.value=''; if(smart.has(iRack)) smart.get(iRack).setText('');
+        clearRU();
+      }else{
+        wRack.hidden=false; wRU.hidden=false;
+        iRack.required=true; iRU.required=true;
+      }
+    }
+  }
+
+  function ensureRetiroRows(){
+    const val = retirosCant.value;
+    const want = parseInt(val,10);
+    for(let i=1;i<=4;i++){
+      let block = retirosRows.querySelector(`[data-idx="${i}"]`);
+      if(!block){ block = buildRetiroBlock(i); }
+      block.style.display = 'none';
+      block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.classList.remove('is-invalid'); inp.setCustomValidity(''); });
+      const selEq = block.querySelector('.rt_equipo'); selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText('');
+      const selRack = block.querySelector('.rt_rack'); selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText('');
+      const selRU = block.querySelector('.rt_ru'); Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText('');
+      applyRetiroBlockRules(block);
+    }
+    if(!val) return;
+
+    for(let i=1;i<=want;i++){
+      const block = retirosRows.querySelector(`[data-idx="${i}"]`);
+      block.style.display = '';
+      applyRetiroBlockRules(block);
+    }
+  }
+
+  /* Mostrar/ocultar secciones según Tipo de trabajo */
+  function applyEquiposBlock(){
+    const isInstal = (tipoTrabajo.value === 'INSTALACIÓN DE EQUIPOS');
+    const isRetiro = (tipoTrabajo.value === 'RETIRO DE EQUIPOS');
+
+    equiposSection.hidden = !isInstal;
+    retirosSection.hidden = !isRetiro;
+
+    equiposCant.required = isInstal;
+    retirosCant.required = isRetiro;
+
+    if(isInstal){
+      // forzar a que el usuario elija cantidad
+      equiposCant.value = '';
+      if(smart.has(equiposCant)) smart.get(equiposCant).setText('— Seleccionar —');
+      ensureEquipoRows();
+      // limpiar retiro
+      $$('#retiros_rows [data-idx]').forEach(block=>{
+        block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.classList.remove('is-invalid'); inp.setCustomValidity(''); });
+        const selEq = block.querySelector('.rt_equipo'); if(selEq){ selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText(''); }
+        const selRack = block.querySelector('.rt_rack'); if(selRack){ selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText(''); }
+        const selRU = block.querySelector('.rt_ru'); if(selRU){ Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText(''); }
+        block.style.display='none';
+      });
+    } else if(isRetiro){
+      retirosCant.value = '';
+      if(smart.has(retirosCant)) smart.get(retirosCant).setText('— Seleccionar —');
+      ensureRetiroRows();
+      // limpiar instalación
+      $$('#equipos_rows [data-idx]').forEach(block=>{
+        block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.classList.remove('is-invalid'); inp.setCustomValidity(''); });
+        const selEq = block.querySelector('.eq_equipo'); selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText('');
+        const selRack = block.querySelector('.eq_rack'); selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText('');
+        const selRU = block.querySelector('.eq_ru'); Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText('');
+        block.style.display='none';
+      });
+    } else {
+      equiposSection.hidden = true;
+      retirosSection.hidden = true;
+    }
+  }
+
+  /* Submit */
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    clampFechaIngreso(); clampFechaSalida(); validateHoras();
+    ['sol_nombres','sol_apepat','sol_apemat','nombre_contrata','p1_nombres','p1_apepat','p1_apemat','p2_nombres','p2_apepat','p2_apemat','p3_nombres','p3_apepat','p3_apemat','p4_nombres','p4_apepat','p4_apemat'].forEach(id=>{ const el=$('#'+id); if(el && !el.closest('[data-pi]')?.hidden) validateName(el); });
+    validateDoc($('#sol_numdoc'),'sol_doc_err'); validatePhone($('#sol_tel'),'sol_tel_err');
+    [1,2,3,4].forEach(i=>{ const row=$('[data-pi="'+i+'"]'); if(!row.hidden){ validateDoc($('#p'+i+'_numdoc'),'p'+i+'_doc_err'); validatePhone($('#p'+i+'_tel'),'p'+i+'_tel_err'); }});
+    if(!validarDNIsUnicos()) return;
+    if(!f.checkValidity()){ f.reportValidity(); return; }
+
+    btn.disabled = true;
+    try {
+      const file = $('#sctr').files?.[0]; if(!file){ setErr('sctr_err','SCTR requerido.'); $('#sctr').classList.add('is-invalid'); throw new Error('SCTR requerido'); }
+      if(file.size > 4*1024*1024){ throw new Error('El PDF no debe superar 4 MB.'); }
+      const buf = await file.arrayBuffer(); let binary=''; const bytes=new Uint8Array(buf), chunk=0x8000;
+      for(let i=0;i<bytes.length;i+=chunk){ binary += String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); }
+      const sctr_name = file.name; const sctr_b64  = btoa(binary);
+
+      const personal=[]; const n=parseInt($('#cant_personal').value,10);
+      for(let i=1;i<=n;i++){ const row=$('[data-pi="'+i+'"]'); if(row.hidden) continue;
+        personal.push({nombres: $('#p'+i+'_nombres').value.trim(), apepat : $('#p'+i+'_apepat').value.trim(), apemat : $('#p'+i+'_apemat').value.trim(), tipodoc: $('#p'+i+'_tipodoc').value, numdoc : $('#p'+i+'_numdoc').value.trim(), tel: $('#p'+i+'_tel').value.trim()}); }
+
+      const equipos = [];
+      if(!equiposSection.hidden && equiposCant.value){
+        const cantEq = parseInt(equiposCant.value,10);
+        for(let i=1;i<=cantEq;i++){
+          const block = equiposRows.querySelector(`[data-idx="${i}"]`);
+          if(!block || block.style.display==='none') continue;
+          const ruSel = block.querySelector(`#eq${i}_ru`);
+          const ruVals = Array.from(ruSel.selectedOptions).map(o=>o.value);
+          equipos.push({
+            nro: i,
+            equipo: block.querySelector(`#eq${i}_equipo`).value,
+            marca:  block.querySelector(`#eq${i}_marca`).value.trim(),
+            modelo: block.querySelector(`#eq${i}_modelo`).value.trim(),
+            serie:  block.querySelector(`#eq${i}_serie`).value.trim(),
+            rack:   block.querySelector(`#eq${i}_rack`).value,
+            ru:     ruVals
+          });
+        }
+      }
+
+      const retiros = [];
+      if(!retirosSection.hidden && retirosCant.value){
+        const cantRt = parseInt(retirosCant.value,10);
+        for(let i=1;i<=cantRt;i++){
+          const block = retirosRows.querySelector(`[data-idx="${i}"]`);
+          if(!block || block.style.display==='none') continue;
+          const ruSel = block.querySelector(`#rt${i}_ru`);
+          const ruVals = Array.from(ruSel.selectedOptions).map(o=>o.value);
+          retiros.push({
+            nro: i,
+            equipo: block.querySelector(`#rt${i}_equipo`).value,
+            marca:  block.querySelector(`#rt${i}_marca`).value.trim(),
+            modelo: block.querySelector(`#rt${i}_modelo`).value.trim(),
+            serie:  block.querySelector(`#rt${i}_serie`).value.trim(),
+            rack:   block.querySelector(`#rt${i}_rack`).value,
+            ru:     ruVals
+          });
+        }
+      }
+
+      const correoComp = $('#correo_nick').value.trim() + $('#correo_dom').value;
+      const payload = { nodo: $('#nodo').value, fecha_ingreso: fi.value, fecha_salida: fs.value, hora_ingreso: hi.value, hora_salida: hs.value,
+        sol_nombres: $('#sol_nombres').value.trim(), sol_apepat: $('#sol_apepat').value.trim(), sol_apemat: $('#sol_apemat').value.trim(),
+        sol_tipodoc: $('#sol_tipodoc').value, sol_numdoc: $('#sol_numdoc').value.trim(), sol_tel: $('#sol_tel').value.trim(),
+        correo: correoComp, trabajos_para: $('#empresa').value, area_resp: $('#area_resp').value, area_apoyo: $('#area_apoyo').value,
+        tipo_trabajo: $('#tipo_trabajo').value, detalles_trabajo: $('#detalles_trabajo').value.trim(), nivel_acceso: $('#nivel_acceso').value,
+        trabajo_contrata: $('#contrata').value, nombre_contrata: $('#nombre_contrata').value.trim(), sctr_filename: sctr_name, sctr_base64: sctr_b64,
+        personal, equipos, retiros };
+
+      if(FLOW_URL){
+        const r = await fetch(FLOW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        if(!r.ok){ throw new Error(`HTTP ${r.status}: ${await r.text()}`); }
+        alert('Solicitud enviada correctamente.');
+      }else{
+        console.log('PAYLOAD →', payload);
+        alert('Demo: revisa la consola del navegador (F12) para ver el payload.');
+      }
+
+      // ===== Reset completo =====
+      f.reset();
+      // selects simples
+      ['nodo','empresa','area_resp','area_apoyo','tipo_trabajo','sol_tipodoc','nivel_acceso','contrata','p1_tipodoc','p2_tipodoc','p3_tipodoc','p4_tipodoc','correo_dom'].forEach(id => {
+        const el = document.querySelector('#'+id); if (!el) return;
+        el.value = ''; el.classList.remove('is-invalid'); el.setCustomValidity('');
+        if (smart.has(el)) smart.get(el).setText('');
+      });
+      $('#correo_nick').value = '';
+      loadAreas(); toggleContrata(); applyCantPersonal(); $('#p1_igual_sol').checked=false; toggleSolNumDoc();
+
+      // instalación
+      equiposCant.value = ''; if(smart.has(equiposCant)) smart.get(equiposCant).setText('— Seleccionar —');
+      $$('#equipos_rows [data-idx]').forEach(block=>{
+        block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.setCustomValidity(''); inp.classList.remove('is-invalid'); });
+        const selEq = block.querySelector('.eq_equipo'); selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText('');
+        const selRack = block.querySelector('.eq_rack'); selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText('');
+        const selRU = block.querySelector('.eq_ru'); Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText('');
+        block.style.display='none';
+      });
+      equiposSection.hidden = true;
+
+      // retiro
+      retirosCant.value = ''; if(smart.has(retirosCant)) smart.get(retirosCant).setText('— Seleccionar —');
+      $$('#retiros_rows [data-idx]').forEach(block=>{
+        block.querySelectorAll('input').forEach(inp=>{ inp.value=''; inp.required=false; inp.setCustomValidity(''); inp.classList.remove('is-invalid'); });
+        const selEq = block.querySelector('.rt_equipo'); if(selEq){ selEq.value=''; if(smart.has(selEq)) smart.get(selEq).setText(''); }
+        const selRack = block.querySelector('.rt_rack'); if(selRack){ selRack.value=''; if(smart.has(selRack)) smart.get(selRack).setText(''); }
+        const selRU = block.querySelector('.rt_ru'); if(selRU){ Array.from(selRU.options).forEach(o=>o.selected=false); if(smart.has(selRU)) smart.get(selRU).setText(''); }
+        block.style.display='none';
+      });
+      retirosSection.hidden = true;
+
+    } catch(err){ alert('Error: ' + err.message); } finally { btn.disabled = false; }
+  });
+
+  /* Init */
+  load(NODOS, $('#nodo')); load(TIPOS_TRABAJO, $('#tipo_trabajo')); loadAreas();
+
+  // Con buscador (default)
+  enhanceSelect('#nodo'); enhanceSelect('#area_resp'); enhanceSelect('#area_apoyo'); enhanceSelect('#tipo_trabajo');
+
+  // Cantidades SIN buscador + placeholder
+  enhanceSelect('#equipos_cant', '— Seleccionar —', {search:false});
+  enhanceSelect('#retiros_cant', '— Seleccionar —', {search:false});
+
+  // SIN buscador (resto)
+  enhanceSelect('#correo_dom', '— Seleccionar —', {search:false});
+  enhanceSelect('#sol_tipodoc', '— Seleccionar —', {search:false});
+  enhanceSelect('#nivel_acceso', '— Seleccionar —', {search:false});
+  enhanceSelect('#empresa', '— Seleccionar —', {search:false});
+  enhanceSelect('#contrata', '— Seleccionar —', {search:false});
+  enhanceSelect('#cant_personal', '', {search:false});
+
+  // Tipos de documento del personal (1..4) SIN buscador
+  for(let i=1;i<=4;i++){ enhanceSelect('#p'+i+'_tipodoc', '— Tipo doc. —', {search:false}); }
+
+  for(let i=1;i<=4;i++) buildEquipoBlock(i);
+  for(let i=1;i<=4;i++) buildRetiroBlock(i);
+
+  $('#empresa').addEventListener('change', ()=>{ loadAreas(); });
+  $('#tipo_trabajo').addEventListener('change', applyEquiposBlock);
+  $('#equipos_cant').addEventListener('change', ensureEquipoRows);
+  $('#retiros_cant').addEventListener('change', ensureRetiroRows);
+
+  applyEquiposBlock();
+  applyCantPersonal();
+</script>
+</body>
+</html>
